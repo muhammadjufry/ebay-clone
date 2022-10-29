@@ -16,9 +16,9 @@ function Header({}: Props) {
   const disconnect = useDisconnect();
   const address = useAddress();
   return (
-    <div className="max-w-6xl mx-auto p-2">
+    <div className="max-w-screen-xl mx-auto p-2">
       <nav className="flex justify-between">
-        <div className="flex items-center space-x-2 text-sm">
+        <div className="flex items-center space-x-3 text-sm">
           {address ? (
             <button onClick={disconnect} className="connectWalletBtn">
               Hi, {address.slice(0, 5) + '...' + address.slice(-4)}
@@ -58,12 +58,12 @@ function Header({}: Props) {
           </Link>
         </div>
 
-        <button className="hidden lg:flex items-center space-x-2 w-20">
+        <button className="hidden lg:flex items-center gap-2 w-24 mr-4">
           <p className="text-gray-600 text-sm">Shop by Category</p>
           <ChevronDownIcon className="h-4 flex-shrink-0" />
         </button>
 
-        <div className="flex items-center space-x-2 px-2 md:px-5 py-2 border-black border-2 flex-1">
+        <div className="flex items-center space-x-2 px-2 md:px-5 py-2 border-black border-2 flex-1 ml-4">
           <MagnifyingGlassIcon className="w-5 text-gray-400" />
           <input
             className="flex-1 outline-none"
