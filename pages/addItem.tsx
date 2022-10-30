@@ -1,8 +1,8 @@
 import React, { FormEvent, useState } from 'react';
 import Header from '../components/Header';
 import { useAddress, useContract } from '@thirdweb-dev/react';
-import { useRouter } from 'next/router';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 type Props = {};
 
 function addItem({}: Props) {
@@ -35,14 +35,16 @@ function addItem({}: Props) {
 
     try {
       const tx = await contract.mintTo(address, metadata);
-      const receipt = tx.receipt; // transaction receipt
-      const tokenId = tx.id; // token id
-      const nft = await tx.data(); // optional, fetches the nft data minted
+
+      const receipt = tx.receipt; // the transaction receipt
+      const tokenId = tx.id; // the id of the NFT minted
+      const nft = await tx.data();
 
       console.log(receipt, tokenId, nft);
+
       router.push('/');
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.log(error);
     }
   };
   return (
@@ -57,17 +59,17 @@ function addItem({}: Props) {
           NFT of the item into your wallet which we can then list for sale!
         </p>
 
-        <div className="flex flex-col justify-center items-center md:flex-row md:space-x-5 pt-5">
+        <div className="flex flex-col justify-center md:items-center md:flex-row md:space-x-5 pt-2">
           <Image
             alt="uploadImage"
             src={preview || 'https://links.papareact.com/ucj'}
             width={320}
             height={320}
-            className="border h-80 w-80 object-contain"
+            className="border h-full w-full md:h-80 md:w-80 mb-4 object-contain"
           />
           <form
             onSubmit={mintNft}
-            className="flex flex-col flex-1 p-2 space-y-2"
+            className="flex flex-col flex-1 md:px-2 space-y-4"
           >
             <label className="font-light">Name of Item</label>
             <input
@@ -95,7 +97,10 @@ function addItem({}: Props) {
                 }
               }}
             />
-            <button type="submit" className="addMintItem">
+            <button
+              type="submit"
+              className="bg-blue-600 font-bold text-white rounded-full py-4 px-10 w-56 hover:drop-shadow-xl cursor-pointer transition-all duration-500"
+            >
               Add/Mint Item
             </button>
           </form>
