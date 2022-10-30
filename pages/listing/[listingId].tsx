@@ -12,9 +12,10 @@ import {
   MediaRenderer,
   useAddress,
   useListing,
+  useAcceptDirectListingOffer,
 } from '@thirdweb-dev/react';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
-import { ListingType } from '@thirdweb-dev/sdk';
+import { ListingType, NATIVE_TOKENS } from '@thirdweb-dev/sdk';
 import Countdown from 'react-countdown';
 import network from '../../utils/network';
 import { ethers } from 'ethers';
@@ -23,6 +24,7 @@ type Props = {};
 
 function ListingPage({}: Props) {
   const router = useRouter();
+  const address = useAddress();
   const { listingId } = router.query as { listingId: string };
   const [bidAmount, setBidAmount] = useState<string>('');
   const [, switchNetwork] = useNetwork();
@@ -44,7 +46,7 @@ function ListingPage({}: Props) {
 
   const { data: listing, isLoading, error } = useListing(contract, listingId);
 
-  console.log(offers);
+  const { mutate: acceptOffer } = useAcceptDirectListingOffer(contract);
 
   useEffect(() => {
     if (!listingId || !contract || !listing) return;
@@ -194,14 +196,16 @@ function ListingPage({}: Props) {
           <MediaRenderer src={listing.asset.image} className="w-full" />
         </div>
 
-        <section className="md:!mt-0 pt-4 md:pt-0 !ml-4 md:ml-8 flex-1 space-y-5 pb-20 lg:pb-0">
+        <section className="md:!mt-0 !pt-4 md:!pt-0 !ml-4 md:ml-8 flex-1 space-y-5 pb-20 lg:pb-0">
           <div>
-            <h1 className="text-2xl font-bold">{listing.asset.name}</h1>
+            <h1 className="text-2xl font-bold mt-4 md:mt-0">
+              {listing.asset.name}
+            </h1>
             <p className="flex items-center space-x-2 mt-3 text-xs sm:text-base border rounded-full px-4 py-2 cursor-pointer w-fit ">
               <UserCircleIcon className="h-5" />
               <span className="font-bold">Seller: {listing.sellerAddress}</span>
             </p>
-            <p className="text-gray-600">{listing.asset.description}</p>
+            <p className="text-gray-600 mt-4">{listing.asset.description}</p>
           </div>
           <div className="grid grid-cols-2 items-center py-2">
             <p className="font-bold">Listing Type:</p>
@@ -222,6 +226,76 @@ function ListingPage({}: Props) {
               Buy Now
             </button>
           </div>
+
+          {listing.type === ListingType.Direct && offers && (
+            <div className="grid grid-cols-2 gap-y-2">
+              <p className="font-bold">Offers: </p>
+              <p className="font-bold">
+                {offers.length > 0 ? offers.length : 0}
+              </p>
+
+              {offers.map((offer) => {
+                <>
+                  <p className="flex items-center ml-5 text-sm italic">
+                    <UserCircleIcon className="h-3 mr-2" />
+                    {offer.offeror.slice(0, 5) +
+                      '...' +
+                      offer.offeror.slice(-5)}
+                  </p>
+                  <div>
+                    <p
+                      className="text-sm italic"
+                      key={
+                        offer.listingId +
+                        offer.offeror +
+                        offer.totalOfferAmount.toString()
+                      }
+                    >
+                      {ethers.utils.formatEther(offer.totalOfferAmount)}{' '}
+                      {NATIVE_TOKENS[network].symbol}
+                    </p>
+                    {listing.sellerAddress === address && (
+                      <button
+                        onClick={() => {
+                          acceptOffer(
+                            {
+                              listingId,
+                              addressOfOfferor: offer.offeror,
+                            },
+                            {
+                              onSuccess(data, variables, context) {
+                                alert('Offer accepted successfully!');
+                                console.log(
+                                  'SUCCESS: ',
+                                  data,
+                                  variables,
+                                  context
+                                );
+                                router.replace('/');
+                              },
+                              onError(data, variables, context) {
+                                alert('ERROR: Offer could not be accept');
+                                console.log(
+                                  'ERROR: ',
+                                  data,
+                                  variables,
+                                  context
+                                );
+                              },
+                            }
+                          );
+                        }}
+                        className="p-2 w-32 bg-red-500/50 rounded-lg"
+                      >
+                        Accept Offer
+                      </button>
+                    )}
+                  </div>
+                </>;
+              })}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 space-y-2 items-center justify-end">
             <hr className="col-span-2" />
             <p className="col-span-2 font-bold">
